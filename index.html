@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>WEBTOON HUB ULTRA: 500+ DATABASE</title>
+  <style>
+    :root {
+      --bg: #0b0e14; --card-bg: #1c2128; --accent: #00dc64;
+      --text: #adbac7; --text-bold: #f0f6fc; --border: #30363d;
+      --ad-bg: #161b22; 
+      --naver: #00dc64; --kakao-page: #ffcd00; --kakao-webtoon: #ff413a; --lezhin: #ed1c24;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Pretendard', -apple-system, sans-serif; padding-bottom: 70px; line-height: 1.4; }
+
+    /* Header & Revenue Ads */
+    header { position: sticky; top: 0; z-index: 1000; background: rgba(11, 14, 20, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 12px; }
+    .header-content { max-width: 1600px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+    .header-top { display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+    .logo { font-size: 1.4rem; font-weight: 900; color: var(--accent); text-decoration: none; letter-spacing: -1px; }
+    
+    .ad-slot-top { flex-grow: 1; background: var(--ad-bg); height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px dashed #444; font-size: 0.7rem; color: #666; text-align: center; }
+    .auth-buttons { display: flex; align-items: center; gap: 10px; }
+    .auth-btn { background: var(--accent); color: #000; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: 0.2s; }
+    .auth-btn:hover { background: #00b44a; }
+    .user-info { color: var(--text); font-size: 0.9rem; }
+
+    .search-box { width: 100%; position: relative; }
+    .search-input { width: 100%; padding: 12px 20px; border-radius: 25px; border: 1px solid var(--border); background: var(--ad-bg); color: white; outline: none; font-size: 0.9rem; transition: 0.3s; }
+    .search-input:focus { border-color: var(--accent); background: #1c2128; box-shadow: 0 0 15px rgba(0, 220, 100, 0.15); }
+
+    /* Filters */
+    .filter-scroll { display: flex; overflow-x: auto; gap: 6px; padding: 4px 0; scrollbar-width: none; }
+    .filter-scroll::-webkit-scrollbar { display: none; }
+    .chip { white-space: nowrap; padding: 6px 14px; border-radius: 15px; background: var(--ad-bg); border: 1px solid var(--border); font-size: 0.75rem; cursor: pointer; color: var(--text); transition: 0.2s; }
+    .chip.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: bold; }
+
+    /* Responsive Grid Layout */
+    .container { max-width: 1600px; margin: 0 auto; padding: 10px; }
+    .webtoon-grid { 
+      display: grid; 
+      /* 모바일 최적화: 아주 작은 화면에서도 3개 이상 유지 */
+      grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); 
+      gap: 10px; 
+    }
+
+    .w-card { background: var(--card-bg); border-radius: 6px; overflow: hidden; border: 1px solid var(--border); transition: 0.25s; cursor: pointer; display: flex; flex-direction: column; }
+    .w-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    
+    .w-thumb { 
+      width: 100%; aspect-ratio: 1 / 1.25; background: linear-gradient(135deg, #2d333b 0%, #1c2128 100%); 
+      display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px; 
+      font-size: 0.65rem; color: #fff; font-weight: bold; overflow: hidden; position: relative; border-bottom: 1px solid var(--border);
+    }
+    
+    .w-info { padding: 8px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .w-title { font-size: 0.75rem; color: var(--text-bold); font-weight: 600; line-height: 1.2; height: 2.4em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 6px; }
+    
+    .badge { font-size: 0.55rem; padding: 2px 5px; border-radius: 3px; font-weight: 800; border: 1px solid transparent; align-self: flex-start; }
+    .b-naver { color: var(--naver); border-color: var(--naver); background: rgba(0,220,100,0.05); }
+    .b-page { color: var(--kakao-page); border-color: var(--kakao-page); background: rgba(255,205,0,0.05); }
+    .b-webtoon { color: var(--kakao-webtoon); border-color: var(--kakao-webtoon); background: rgba(255,65,58,0.05); }
+    .b-lezhin { color: var(--lezhin); border-color: var(--lezhin); background: rgba(237,28,36,0.05); }
+
+    /* Pagination & Footer Ads */
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 6px; margin: 40px 0; flex-wrap: wrap; }
+    .page-btn { min-width: 35px; height: 35px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); border-radius: 5px; cursor: pointer; transition: 0.2s; }
+    .page-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: bold; }
+    
+    .ad-bottom { width: 100%; max-width: 728px; margin: 20px auto; background: var(--ad-bg); height: 90px; border: 1px dashed #444; display: flex; align-items: center; justify-content: center; color: #555; border-radius: 8px; }
+    .copyright-note { max-width: 1600px; margin: 0 auto 20px; text-align: center; color: #8b96a2; font-size: 0.75rem; line-height: 1.5; }
+    .contact-info { max-width: 1600px; margin: 0 auto 20px; text-align: center; color: #8b96a2; font-size: 0.75rem; line-height: 1.5; }
+
+    /* Auth Modal */
+    .auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 3000; }
+    .auth-modal-content { background: var(--card-bg); padding: 20px; border-radius: 8px; max-width: 400px; width: 90%; text-align: center; }
+    .auth-modal-content h3 { margin-bottom: 15px; color: var(--text-bold); }
+    .auth-modal-content input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid var(--border); background: var(--ad-bg); color: var(--text); border-radius: 5px; }
+    .auth-modal-content button { margin: 5px; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; background: var(--accent); color: #000; font-weight: bold; }
+    .auth-modal-content ul { text-align: left; list-style: none; padding: 0; }
+    .auth-modal-content li { padding: 5px 0; border-bottom: 1px solid var(--border); }
+    .community-modal { max-width: 600px; max-height: 80vh; overflow-y: auto; }
+    .posts-list { margin-top: 15px; }
+    .post-item { background: var(--ad-bg); padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+    .post-item h4 { margin: 0 0 5px 0; color: var(--text-bold); }
+    .post-item p { margin: 5px 0; color: var(--text); }
+    .post-item small { color: #8b96a2; }
+
+    /* Mobile Bottom Navigation */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #1c2128; border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 2000; padding-bottom: env(safe-area-inset-bottom); }
+    .nav-item { color: var(--text); text-decoration: none; font-size: 0.65rem; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .nav-item svg { width: 20px; height: 20px; fill: currentColor; }
+
+    @media (min-width: 768px) {
+      .webtoon-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
+      .w-title { font-size: 0.85rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-content">
+    <div class="header-top">
+      <a href="#" class="logo">WEBTOON HUB</a>
+      <div class="ad-slot-top">구글 애드센스 / 하우스 광고 영역</div>
+      <div id="auth-buttons"></div>
+    </div>
+    <div class="search-box">
+      <input type="text" class="search-input" id="searchInput" placeholder="500개 이상의 실제 웹툰을 검색해 보세요..." oninput="handleSearch()">
+    </div>
+    <div class="filter-scroll">
+      <div class="chip active" onclick="setFilter('all', this)">전체 플랫폼</div>
+      <div class="chip" onclick="setFilter('naver', this)">네이버</div>
+      <div class="chip" onclick="setFilter('page', this)">카카오페이지</div>
+      <div class="chip" onclick="setFilter('webtoon', this)">카카오웹툰</div>
+      <div class="chip" onclick="setFilter('lezhin', this)">레진코믹스</div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="webtoon-grid" id="mainGrid"></div>
+  <div class="pagination" id="pagination"></div>
+  <div class="ad-bottom">하단 배너 광고 (728x90)</div>
+  <div class="copyright-note">모든 콘텐츠는 각 플랫폼의 저작권을 존중하며, 합법적인 이용을 권장합니다.</div>
+  <div class="contact-info">문의사항;202413056@kyonggi.ac.kr</div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="#" class="nav-item">🏠<span>홈</span></a>
+  <a href="#" class="nav-item" onclick="pickRandom(); return false;">🎲<span>랜덤추천</span></a>
+  <a href="community.html" class="nav-item">💬<span>커뮤니티</span></a>
+  <a href="#" class="nav-item">🔥<span>인기작</span></a>
+  <a href="#" class="nav-item">👤<span>MY</span></a>
+</nav>
+
+<script>
+/**
+ * 대규모 웹툰 데이터베이스 (실제 존재 작품 기반)
+ */
+const db = [
+  // --- NAVER WEBTOON (초대형 보충) ---
+  {t:"화산귀환", p:"naver"}, {t:"전지적 독자 시점", p:"naver"}, {t:"외모지상주의", p:"naver"}, {t:"신의 탑", p:"naver"}, {t:"호랑이형님", p:"naver"}, {t:"유미의 세포들", p:"naver"}, {t:"재혼 황후", p:"naver"}, {t:"고수", p:"naver"}, {t:"기기괴괴", p:"naver"}, {t:"가비지타임", p:"naver"}, {t:"격기3반", p:"naver"}, {t:"일렉시드", p:"naver"}, {t:"김부장", p:"naver"}, {t:"싸움독학", p:"naver"}, {t:"약한영웅", p:"naver"}, {t:"참교육", p:"naver"}, {t:"취사병 전설이 되다", p:"naver"}, {t:"내 남편과 결혼해줘", p:"naver"}, {t:"연애혁명", p:"naver"}, {t:"작전명 순정", p:"naver"}, {t:"정글쥬스", p:"naver"}, {t:"초인의 시대", p:"naver"}, {t:"헬퍼", p:"naver"}, {t:"하이브", p:"naver"}, {t:"스위트홈", p:"naver"}, {t:"노블레스", p:"naver"}, {t:"치즈인더트랩", p:"naver"}, {t:"마음의소리", p:"naver"}, {t:"신과함께", p:"naver"}, {t:"죽음에 관하여", p:"naver"}, {t:"윈드브레이커", p:"naver"}, {t:"더 복서", p:"naver"}, {t:"나이트런", p:"naver"}, {t:"덴마", p:"naver"}, {t:"금수저", p:"naver"}, {t:"타인은 지옥이다", p:"naver"}, {t:"여신강림", p:"naver"}, {t:"바른연애 길잡이", p:"naver"}, {t:"이번 생도 부탁해", p:"naver"}, {t:"청춘 블라썸", p:"naver"}, {t:"소녀의 세계", p:"naver"}, {t:"쿠베라", p:"naver"}, {t:"테러맨", p:"naver"}, {t:"부활남", p:"naver"}, {t:"비질란테", p:"naver"}, {t:"상남자의 삶", p:"naver"}, {t:"백수세끼", p:"naver"}, {t:"피라미드 게임", p:"naver"}, {t:"인생존망", p:"naver"}, {t:"소년법정", p:"naver"}, {t:"나노리스트", p:"naver"}, {t:"신도림", p:"naver"}, {t:"고래별", p:"naver"}, {t:"정년이", p:"naver"}, {t:"언덕 위의 제임스", p:"naver"}, {t:"유사연애", p:"naver"}, {t:"칼가는 소녀", p:"naver"}, {t:"집이 없어", p:"naver"}, {t:"별이삼샵", p:"naver"}, {t:"똑 닮은 딸", p:"naver"}, {t:"마루는 강쥐", p:"naver"}, {t:"꿈의 기업", p:"naver"}, {t:"광마회귀", p:"naver"}, {t:"나노마신", p:"naver"}, {t:"무림서부", p:"naver"}, {t:"장씨세가 호위무사", p:"naver"}, {t:"절대검감", p:"naver"}, {t:"괴력난신", p:"naver"}, {t:"무신강림", p:"naver"}, {t:"천마육성", p:"naver"}, {t:"신마경천기", p:"naver"}, {t:"용비불패", p:"naver"}, {t:"마도전생기", p:"naver"}, {t:"환생무신", p:"naver"}, {t:"천마권수", p:"naver"}, {t:"무림사수", p:"naver"}, {t:"절대무신", p:"naver"}, {t:"파천마신", p:"naver"}, {t:"강호풍운", p:"naver"}, {t:"중원싹쓸이", p:"naver"}, {t:"무림의 왕", p:"naver"}, {t:"혈신", p:"naver"}, {t:"세기말 풋사과 보습학원", p:"naver"}, {t:"좀비딸", p:"naver"}, {t:"방과 후 전쟁활동", p:"naver"}, {t:"삼국지톡", p:"naver"}, {t:"조선왕조실톡", p:"naver"}, {t:"쌉니다 천리마마트", p:"naver"}, {t:"가우스전자", p:"naver"}, {t:"놓지마 정신줄", p:"naver"}, {t:"생활의 참견", p:"naver"}, {t:"어피어런스", p:"naver"}, {t:"커넥트", p:"naver"}, {t:"심연의 하늘", p:"naver"}, {t:"아일랜드", p:"naver"}, {t:"신암행어사", p:"naver"}, {t:"버닝헬", p:"naver"},
+
+  // --- KAKAO PAGE (초대형 보충) ---
+  {t:"나 혼자만 레벨업", p:"page"}, {t:"템빨", p:"page"}, {t:"도굴왕", p:"page"}, {t:"사내 맞선", p:"page"}, {t:"이태원 클라쓰", p:"page"}, {t:"김비서가 왜 그럴까", p:"page"}, {t:"닥터 최태수", p:"page"}, {t:"묵향 다크레이디", p:"page"}, {t:"비뢰도", p:"page"}, {t:"SSS급 죽어야 사는 헌터", p:"page"}, {t:"검술가문의 막내아들", p:"page"}, {t:"데뷔 못 하면 죽는 병 걸림", p:"page"}, {t:"악역의 엔딩은 죽음뿐", p:"page"}, {t:"인소의 법칙", p:"page"}, {t:"어느 날 공주가 되어버렸다", p:"page"}, {t:"의원 다시 살다", p:"page"}, {t:"무림로그", p:"page"}, {t:"두 번 사는 랭커", p:"page"}, {t:"재앙급 영웅이 귀환했다", p:"page"}, {t:"만렙 돌파", p:"page"}, {t:"학사재생", p:"page"}, {t:"로그인 무림", p:"page"}, {t:"외과의사 엘리제", p:"page"}, {t:"버림 받은 황비", p:"page"}, {t:"그녀가 공작저로 가야 했던 사정", p:"page"}, {t:"황제의 외동딸", p:"page"}, {t:"빛과 그림자", p:"page"}, {t:"궁중잔혹사", p:"page"}, {t:"왕의 딸로 태어났다고 합니다", p:"page"}, {t:"아도니스", p:"page"}, {t:"악녀는 모래시계를 되돌린다", p:"page"}, {t:"사실은 내가 진짜였다", p:"page"}, {t:"한 번 더 해요", p:"page"}, {t:"남편을 죽여줘요", p:"page"}, {t:"궁", p:"page"}, {t:"밤을 걷는 선비", p:"page"}, {t:"풀하우스", p:"page"}, {t:"이미테이션", p:"page"}, {t:"너를 만나다", p:"page"}, {t:"정령왕의 딸", p:"page"}, {t:"정령왕 엘퀴네스", p:"page"}, {t:"달빛조각사", p:"page"}, {t:"더 라이브", p:"page"}, {t:"얼어붙은 플레이어의 귀환", p:"page"}, {t:"레벨업 못하는 플레이어", p:"page"}, {t:"강철을 먹는 플레이어", p:"page"}, {t:"무신 귀환록", p:"page"}, {t:"소환사가 너무 강함", p:"page"}, {t:"랭커의 귀환", p:"page"}, {t:"이계 검왕 생존기", p:"page"}, {t:"어쩌다보니 최강", p:"page"}, {t:"만렙부터 시작", p:"page"}, {t:"신과함께 레벨업", p:"page"}, {t:"월드 게이트", p:"page"}, {t:"라이트 세이버", p:"page"}, {t:"독고", p:"page"}, {t:"통", p:"page"}, {t:"샤크", p:"page"}, {t:"블랙필드", p:"page"}, {t:"가드패스", p:"page"}, {t:"좋아하면 울리는", p:"page"}, {t:"북검전기", p:"page"}, {t:"사신표월", p:"page"}, {t:"비뢰도", p:"page"}, {t:"마신강림", p:"page"}, {t:"혈마재림", p:"page"}, {t:"천화서고 대공자", p:"page"}, {t:"금강불괴", p:"page"}, {t:"무련전기", p:"page"}, {t:"패왕전설", p:"page"}, {t:"무적자", p:"page"}, {t:"환생무림", p:"page"}, {t:"신릉군", p:"page"}, {t:"무영도", p:"page"},
+
+  // --- KAKAO WEBTOON / DAUM ---
+  {t:"미생", p:"webtoon"}, {t:"무빙", p:"webtoon"}, {t:"경이로운 소문", p:"webtoon"}, {t:"나빌레라", p:"webtoon"}, {t:"조명가게", p:"webtoon"}, {t:"취향저격 그녀", p:"webtoon"}, {t:"아비무쌍", p:"webtoon"}, {t:"쌍갑포차", p:"webtoon"}, {t:"술꾼도시처녀들", p:"webtoon"}, {t:"관찰인간", p:"webtoon"}, {t:"이끼", p:"webtoon"}, {t:"파인", p:"webtoon"}, {t:"어쿠스틱 라이프", p:"webtoon"}, {t:"결혼해도 똑같네", p:"webtoon"}, {t:"트레이스", p:"webtoon"}, {t:"다이어터", p:"webtoon"}, {t:"일진의 크기", p:"webtoon"}, {t:"대무가", p:"webtoon"}, {t:"랑데부", p:"webtoon"}, {t:"가시", p:"webtoon"}, {t:"브레이커", p:"webtoon"}, {t:"레드스톰", p:"webtoon"}, {t:"창백한 말", p:"webtoon"}, {t:"십이야", p:"webtoon"}, {t:"양영순의 천일야화", p:"webtoon"}, {t:"강풀의 타이밍", p:"webtoon"}, {t:"어게인", p:"webtoon"}, {t:"이웃사람", p:"webtoon"},
+
+  // --- LEZHIN ---
+  {t:"우리 사이 느은", p:"lezhin"}, {t:"킬링 스토킹", p:"lezhin"}, {t:"야화첩", p:"lezhin"}, {t:"백도사", p:"lezhin"}, {t:"4컷용사", p:"lezhin"}, {t:"징벌 소녀", p:"lezhin"}, {t:"불멸의 날들", p:"lezhin"}, {t:"소년이여", p:"lezhin"}, {t:"애늙은이", p:"lezhin"}, {t:"레바툰", p:"lezhin"}, {t:"그 끝에 있는 것", p:"lezhin"}, {t:"박씨유대기", p:"lezhin"}
+];
+
+let curPlat = 'all', keyword = '', curPage = 1;
+const itemsPerPage = 100; // 대규모 데이터이므로 한 페이지에 많이 노출
+
+function getSearchUrl(title, platform) {
+  const enc = encodeURIComponent(title);
+  switch(platform) {
+    case 'naver': 
+      return `https://comic.naver.com/search?keyword=${enc}`;
+    case 'page': 
+    case 'kakao': 
+      return `https://page.kakao.com/search/result?keyword=${enc}&categoryUid=10`;
+    case 'webtoon': 
+      return `https://webtoon.kakao.com/search?keyword=${enc}`;
+    case 'lezhin': 
+      return `https://www.lezhin.com/ko/search?q=${enc}&condition=all`;
+    default: 
+      return `https://search.naver.com/search.naver?query=${enc}+웹툰`;
+  }
+}
+
+function render() {
+  const grid = document.getElementById('mainGrid');
+  const filtered = db.filter(item => {
+    return (curPlat === 'all' || item.p === curPlat) &&
+           (item.t.toLowerCase().includes(keyword.toLowerCase()));
+  });
+
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const start = (curPage - 1) * itemsPerPage;
+  const pageData = filtered.slice(start, start + itemsPerPage);
+
+  if(pageData.length === 0) {
+    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 100px; color: #555;">검색 결과가 없습니다.</div>`;
+    renderPagination(0);
+    return;
+  }
+
+  grid.innerHTML = pageData.map(item => {
+    const url = getSearchUrl(item.t, item.p);
+    let pName = "", bClass = "";
+    if(item.p==='naver'){pName="NAVER"; bClass="b-naver";}
+    else if(item.p==='page' || item.p==='kakao'){pName="KAKAO PAGE"; bClass="b-page";}
+    else if(item.p==='webtoon'){pName="WEBTOON"; bClass="b-webtoon";}
+    else if(item.p==='lezhin'){pName="LEZHIN"; bClass="b-lezhin";}
+    else {pName="WEBTOON"; bClass="b-naver";} // 기본값
+
+    return `
+      <div class="w-card" onclick="authManager.addWatchedWebtoon('${item.t}', '${item.p}'); window.open('${url}', '_blank')">
+        <div class="w-thumb">${item.t}</div>
+        <div class="w-info">
+          <p class="w-title">${item.t}</p>
+          <span class="badge ${bClass}">${pName}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  renderPagination(totalPages);
+}
+
+function renderPagination(total) {
+  const pagin = document.getElementById('pagination');
+  if(total <= 1) { pagin.innerHTML = ''; return; }
+  let html = '';
+  // 이전 페이지 버튼 생략 (간결화)
+  for(let i=1; i<=total; i++) {
+    html += `<button class="page-btn ${i===curPage?'active':''}" onclick="changePage(${i})">${i}</button>`;
+  }
+  pagin.innerHTML = html;
+}
+
+function changePage(p) { 
+  curPage = p; 
+  render(); 
+  window.scrollTo({top: 0, behavior: 'smooth'}); 
+}
+
+function setFilter(val, el) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  curPlat = val;
+  curPage = 1; 
+  render();
+}
+
+function handleSearch() {
+  keyword = document.getElementById('searchInput').value;
+  curPage = 1; 
+  render();
+}
+
+function pickRandom() {
+  const r = db[Math.floor(Math.random() * db.length)];
+  if(confirm(`🎲 오늘 볼만한 추천 웹툰:\n[ ${r.t} ]\n\n해당 플랫폼으로 이동하시겠습니까?`)) {
+    authManager.addWatchedWebtoon(r.t, r.p);
+    window.open(getSearchUrl(r.t, r.p), '_blank');
+  }
+}
+
+// 초기 실행
+render();
+</script>
+<script src="app.js"></script>
+</body>
+</html>

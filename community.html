@@ -1,0 +1,292 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WEBTOON HUB - 커뮤니티</title>
+  <style>
+    :root {
+      --bg: #0b0e14; --card-bg: #1c2128; --accent: #00dc64;
+      --text: #adbac7; --text-bold: #f0f6fc; --border: #30363d;
+      --ad-bg: #161b22;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Pretendard', -apple-system, sans-serif; padding: 20px; }
+
+    header { text-align: center; margin-bottom: 20px; }
+    .logo { font-size: 1.8rem; font-weight: 900; color: var(--accent); text-decoration: none; }
+
+    .community-container { max-width: 800px; margin: 0 auto; }
+    .write-btn { background: var(--accent); color: #000; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-bottom: 20px; }
+    .write-btn:hover { background: #00b44a; }
+
+    .posts-list { }
+    .post-item { background: var(--card-bg); padding: 15px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border); }
+    .post-item h4 { color: var(--text-bold); margin-bottom: 10px; }
+    .post-item p { margin-bottom: 10px; line-height: 1.5; }
+    .post-item small { color: #8b96a2; }
+    .comment-list { margin-top: 10px; padding-left: 0; list-style: none; }
+    .comment-item { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 6px; margin-bottom: 8px; }
+    .comment-item p { margin-bottom: 6px; }
+    .comment-item small { color: #8b96a2; font-size: 0.85rem; }
+    .comment-input { width: 100%; padding: 10px; margin-top: 10px; border: 1px solid var(--border); background: var(--ad-bg); color: var(--text); border-radius: 5px; }
+    .comment-btn { margin-top: 8px; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; background: var(--accent); color: #000; font-weight: bold; }
+    .comment-btn:hover { background: #00b44a; }
+
+    .admin-btn { background: #ff413a; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 10px; font-size: 0.8rem; }
+    .admin-btn.edit { background: #ffcd00; color: #000; }
+
+    .write-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+    .write-modal-content { background: var(--card-bg); padding: 20px; border-radius: 8px; max-width: 500px; width: 90%; }
+    .write-modal-content h3 { margin-bottom: 15px; color: var(--text-bold); }
+    .write-modal-content input, .write-modal-content textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid var(--border); background: var(--ad-bg); color: var(--text); border-radius: 5px; }
+    .write-modal-content button { margin: 5px; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; background: var(--accent); color: #000; font-weight: bold; }
+    .write-modal-content button.cancel { background: #666; }
+
+    .back-btn { position: fixed; top: 20px; left: 20px; background: var(--card-bg); color: var(--text); border: 1px solid var(--border); padding: 10px; border-radius: 5px; text-decoration: none; }
+    .back-btn:hover { background: var(--ad-bg); }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-btn">← 홈으로</a>
+
+  <header>
+    <h1 class="logo">WEBTOON HUB 커뮤니티</h1>
+  </header>
+
+  <div class="community-container">
+    <button class="write-btn" onclick="showWriteModal()">글쓰기</button>
+    <div class="posts-list" id="postsList"></div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // 페이지 로드 시 초기화
+    window.onload = function() {
+      authManager.init(); // 로그인 상태 초기화
+      displayPosts();
+    };
+
+    // 게시글 표시 함수
+    function displayPosts() {
+      const postsList = document.getElementById('postsList');
+      const posts = JSON.parse(localStorage.getItem('posts')) || [];
+
+      if (posts.length === 0) {
+        postsList.innerHTML = '<p>아직 게시글이 없습니다.</p>';
+        return;
+      }
+
+      postsList.innerHTML = posts.slice().reverse().map((post, index) => {
+        const realIndex = posts.length - 1 - index;
+        const adminTag = post.isAdmin ? '[관리자] ' : '';
+        let adminButtons = '';
+        if (authManager.currentUser && authManager.currentUser.isAdmin) {
+          adminButtons = `
+            <button class="admin-btn edit" onclick="editPost(${realIndex})">수정</button>
+            <button class="admin-btn" onclick="deletePost(${realIndex})">삭제</button>
+          `;
+        }
+        const comments = (post.comments || []).slice();
+        const commentHtml = comments.length === 0
+          ? '<p>댓글이 없습니다.</p>'
+          : `<ul class="comment-list">${comments.map((comment, commentIndex) => `
+              <li class="comment-item">
+                <p>${comment.content}</p>
+                <small>작성자: ${comment.author}${comment.isAdmin ? ' [관리자]' : ''} | ${new Date(comment.date).toLocaleString()}</small>
+                ${authManager.currentUser && (authManager.currentUser.isAdmin || authManager.currentUser.username === comment.author) ? `
+                  <button class="admin-btn" style="margin-top:8px;" onclick="deleteComment(${realIndex}, ${commentIndex})">댓글 삭제</button>
+                ` : ''}
+              </li>
+            `).join('')}</ul>`;
+
+        return `
+          <div class="post-item">
+            <h4>${post.title}</h4>
+            <p>${post.content}</p>
+            <small>작성자: ${adminTag}${post.author} | ${new Date(post.date).toLocaleString()}</small>
+            ${adminButtons}
+            <div class="comments-section">
+              <h5>댓글</h5>
+              ${commentHtml}
+              ${authManager.currentUser ? `
+                <textarea id="comment-input-${realIndex}" class="comment-input" placeholder="댓글을 입력하세요." rows="3"></textarea>
+                <button class="comment-btn" onclick="addComment(${realIndex})">댓글 작성</button>
+              ` : '<p>로그인 후 댓글을 작성할 수 있습니다.</p>'}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 글쓰기 모달 표시
+    function showWriteModal() {
+      if (!authManager.currentUser) {
+        alert('로그인이 필요합니다.');
+        window.location.href = 'jeminie.webtoon4.html';
+        return;
+      }
+
+      const modal = document.createElement('div');
+      modal.className = 'write-modal';
+      modal.innerHTML = `
+        <div class="write-modal-content">
+          <h3>글쓰기</h3>
+          <input type="text" id="post-title" placeholder="제목" required>
+          <textarea id="post-content" placeholder="내용" rows="5" required></textarea>
+          <button onclick="writePost()">작성</button>
+          <button class="cancel" onclick="closeModal()">취소</button>
+        </div>
+      `;
+      modal.onclick = (e) => {
+        if (e.target === modal) closeModal();
+      };
+      document.body.appendChild(modal);
+    }
+
+    // 글 작성
+    function writePost() {
+      const title = document.getElementById('post-title').value.trim();
+      const content = document.getElementById('post-content').value.trim();
+
+      if (!title || !content) {
+        alert('제목과 내용을 입력해주세요.');
+        return;
+      }
+
+      const posts = JSON.parse(localStorage.getItem('posts')) || [];
+      const post = {
+        title,
+        content,
+        author: authManager.currentUser.username,
+        isAdmin: authManager.currentUser.isAdmin || false,
+        date: new Date().toISOString(),
+        comments: []
+      };
+
+      posts.push(post);
+      localStorage.setItem('posts', JSON.stringify(posts));
+      alert('게시글이 작성되었습니다.');
+      closeModal();
+      displayPosts(); // 목록 새로고침
+    }
+
+    // 댓글 작성
+    function addComment(index) {
+      if (!authManager.currentUser) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+      const textarea = document.getElementById(`comment-input-${index}`);
+      if (!textarea) return;
+      const content = textarea.value.trim();
+      if (!content) {
+        alert('댓글 내용을 입력해주세요.');
+        return;
+      }
+      const posts = JSON.parse(localStorage.getItem('posts')) || [];
+      const post = posts[index];
+      if (!post.comments) post.comments = [];
+      post.comments.push({
+        author: authManager.currentUser.username,
+        isAdmin: authManager.currentUser.isAdmin || false,
+        content,
+        date: new Date().toISOString()
+      });
+      localStorage.setItem('posts', JSON.stringify(posts));
+      textarea.value = '';
+      displayPosts();
+    }
+
+    // 댓글 삭제
+    function deleteComment(postIndex, commentIndex) {
+      if (!authManager.currentUser) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+      const posts = JSON.parse(localStorage.getItem('posts')) || [];
+      const post = posts[postIndex];
+      if (!post || !Array.isArray(post.comments) || !post.comments[commentIndex]) {
+        alert('삭제할 댓글을 찾을 수 없습니다.');
+        return;
+      }
+      const comment = post.comments[commentIndex];
+      if (!authManager.currentUser.isAdmin && authManager.currentUser.username !== comment.author) {
+        alert('댓글 삭제 권한이 없습니다.');
+        return;
+      }
+      if (confirm('정말 이 댓글을 삭제하시겠습니까?')) {
+        post.comments.splice(commentIndex, 1);
+        localStorage.setItem('posts', JSON.stringify(posts));
+        displayPosts();
+      }
+    }
+
+    // 게시글 삭제
+    function deletePost(index) {
+      if (!authManager.currentUser || !authManager.currentUser.isAdmin) {
+        alert('권한이 없습니다.');
+        return;
+      }
+      if (confirm('정말 이 게시글을 삭제하시겠습니까?')) {
+        const posts = JSON.parse(localStorage.getItem('posts')) || [];
+        posts.splice(index, 1);
+        localStorage.setItem('posts', JSON.stringify(posts));
+        displayPosts();
+      }
+    }
+
+    // 게시글 수정
+    function editPost(index) {
+      if (!authManager.currentUser || !authManager.currentUser.isAdmin) {
+        alert('권한이 없습니다.');
+        return;
+      }
+      const posts = JSON.parse(localStorage.getItem('posts')) || [];
+      const post = posts[index];
+
+      const modal = document.createElement('div');
+      modal.className = 'write-modal';
+      modal.innerHTML = `
+        <div class="write-modal-content">
+          <h3>글 수정</h3>
+          <input type="text" id="edit-title" value="${post.title}" required>
+          <textarea id="edit-content" rows="5" required>${post.content}</textarea>
+          <button onclick="saveEdit(${index})">저장</button>
+          <button class="cancel" onclick="closeModal()">취소</button>
+        </div>
+      `;
+      modal.onclick = (e) => {
+        if (e.target === modal) closeModal();
+      };
+      document.body.appendChild(modal);
+    }
+
+    // 수정 저장
+    function saveEdit(index) {
+      const title = document.getElementById('edit-title').value.trim();
+      const content = document.getElementById('edit-content').value.trim();
+
+      if (!title || !content) {
+        alert('제목과 내용을 입력해주세요.');
+        return;
+      }
+
+      const posts = JSON.parse(localStorage.getItem('posts')) || [];
+      posts[index].title = title;
+      posts[index].content = content;
+      localStorage.setItem('posts', JSON.stringify(posts));
+      alert('게시글이 수정되었습니다.');
+      closeModal();
+      displayPosts();
+    }
+
+    // 모달 닫기
+    function closeModal() {
+      const modal = document.querySelector('.write-modal');
+      if (modal) modal.remove();
+    }
+  </script>
+</body>
+</html>
